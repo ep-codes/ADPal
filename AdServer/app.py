@@ -6,6 +6,8 @@ import logging
 from typing import Dict, Any, Optional
 import os
 from dotenv import load_dotenv
+import json
+import re
 
 # Load environment variables
 load_dotenv()
@@ -30,21 +32,6 @@ CLOUDFLARE_API_KEY = os.getenv("API_TOKEN")
 CLOUDFLARE_ACCOUNT_ID = os.getenv("ACCOUNT_ID")
 CLOUDFLARE_BASE_URL = "https://api.cloudflare.com/client/v4/accounts"
 
-# Sample ads data
-ads = {
-    "technology": {
-        "prompt": "futuristic smartphone with holographic display in a modern setting",
-        "text": "Check out the latest smartphones at TechStore!"
-    },
-    "sports": {
-        "prompt": "dynamic sports equipment with energy trails in a stadium",
-        "text": "Get your sports gear at SportsWorld!"
-    },
-    "finance": {
-        "prompt": "professional looking charts and graphs with upward trends",
-        "text": "Invest smarter with FinTechPro!"
-    }
-}
 
 async def run(model: str, inputs: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -83,6 +70,8 @@ async def run(model: str, inputs: Dict[str, Any]) -> Dict[str, Any]:
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred")
 
+import requests
+
 @app.get("/get_ad")
 async def get_ad(category: Optional[str] = Query(None, description="Category for the ad"),
                 accept: Optional[str] = Query(None, alias="Accept")):
@@ -91,22 +80,43 @@ async def get_ad(category: Optional[str] = Query(None, description="Category for
     """
     try:
         # Get category-specific prompt or use default
-        ad_data = ads.get(category, {
-            "prompt": "llama that goes on a journey to find an orange cloud",
-            "text": "Discover amazing products!"
-        })
+        # Generate llm prompt
+
+        inputs = [
+            { "role": "system", "content": "You are a ad creator that comes up with short picture ad concepts 10 words max only output json" },
+            { "role": "user", "content": f"Write a ad about {category} give a tagline and a image generation prompt in json format. The json should have a 'prompt' key for the image generation prompt and a 'text' key for the tagline." },
+        ]
+
+        input = { "messages": inputs }
+        response = requests.post(
+            f"{CLOUDFLARE_BASE_URL}/{CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3-8b-instruct",
+            headers={"Authorization": f"Bearer {CLOUDFLARE_API_KEY}"},
+            json=input
+        )
+
+        raw_output = response.json()
+        raw_output= raw_output['result']['response']
+        match = re.search(r'\{.*\}', raw_output, re.DOTALL)
+
+        if match:
+            json_content = match.group(0)  # Extract matched JSON
+            ad_data = json.loads(json_content)
+
+        logger.info(f"Generating ad for category: {category}")
+        logger.info(f"Ad prompt: {ad_data['prompt']}")
+        logger.info(f"Ad text: {ad_data['text']}")
 
         # If client wants JSON, return without generating image
         if accept and "application/json" in accept.lower():
             return JSONResponse(content={
-                "ad": ad_data["text"],
+                "ad": "No ad",
                 "prompt": ad_data["prompt"]
             })
 
         # Generate image
         inputs = {
             "prompt": ad_data["prompt"],
-            "negative_prompt": "no rain, no dark clouds, no blur, no distortion",
+            "negative_prompt": "no blur, no distortion, no text",
             "height": 512,
             "width": 512,
         }
@@ -122,7 +132,7 @@ async def get_ad(category: Optional[str] = Query(None, description="Category for
                 timeout=30.0
             )
             response.raise_for_status()
-            
+
             # Return the image
             return Response(
                 content=response.content,

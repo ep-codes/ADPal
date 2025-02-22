@@ -30,10 +30,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'updateUI') {
         chrome.storage.local.get(["currentAd"], (data) => {
             let currentAd = data.currentAd;
-            if (currentAd && currentAd.startsWith('blob:')) {
+            if (currentAd && typeof currentAd === 'object' && currentAd.image && currentAd.image.startsWith('blob:')) {
                 // Create an image element
                 let img = document.createElement('img');
-                img.src = currentAd;
+                img.src = currentAd.image;
                 img.style.width = '200px';
                 img.style.height = '200px';
                 img.style.position = 'fixed';
@@ -43,9 +43,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                 // Append the image to the body
                 document.body.appendChild(img);
-            } else {
+            } else if (currentAd && typeof currentAd === 'object' && currentAd.text) {
                 // Display the ad text
-                alert(currentAd);
+                alert(currentAd.text);
+            } else {
+                alert("Error loading ad. Please try again.");
             }
         });
     }
