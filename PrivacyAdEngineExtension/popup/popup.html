@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Privacy Ad Settings</title>
+    <link rel="stylesheet" type="text/css" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Current Ad</h2>
+        <p id="adText">Loading...</p>
+        
+        <h2>History Settings</h2>
+        <div class="settings-section">
+            <label for="historyRetention">Keep History For:</label>
+            <select id="historyRetention">
+                <option value="week">1 Week</option>
+                <option value="month" selected>1 Month</option>
+                <option value="year">1 Year</option>
+            </select>
+        </div>
+        
+        <div class="button-section">
+            <button id="clearHistory">Clear History</button>
+            <button id="reset">Reset All</button>
+        </div>
+        
+        <div class="history-section">
+            <h2>Recent History</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>
