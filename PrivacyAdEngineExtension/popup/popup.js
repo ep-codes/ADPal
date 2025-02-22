@@ -19,7 +19,7 @@ function updateUI() {
             
             if (data.currentAd) {
                 if (data.currentAd.image) {
-                    adImageElement.src = data.currentAd.image;
+                    adImageElement.src = data.currentAd.image; // Base64 image can be directly set as src
                     adImageElement.style.display = 'block';
                     adElement.innerText = data.currentAd.text || '';
                 } else {
@@ -41,47 +41,52 @@ function updateUI() {
         
         // Update history retention dropdown
         const retention = data.historyRetention || 'month';
-        document.getElementById("historyRetention").value = retention;
+        const historyRetention = document.getElementById("historyRetention");
+        if (historyRetention) {
+            historyRetention.value = retention;
+        }
         
         // Update history list
         const historyList = document.getElementById("historyList");
-        historyList.innerHTML = '';
-        
-        if (data.history && data.history.length > 0) {
-            const recentHistory = data.history.slice(-5).reverse(); // Show last 5 entries
-            recentHistory.forEach(entry => {
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                const date = new Date(entry.timestamp);
-                
-                // Create HTML for history item with image
-                let historyContent = `
-                    <div class="history-info">
-                        <span class="history-category">${entry.category}</span>
-                        <span class="history-date">${date.toLocaleDateString()}</span>
-                    </div>
-                `;
-                
-                if (entry.adContent && entry.adContent.image) {
-                    historyContent += `
-                        <div class="history-content">
-                            <img src="${entry.adContent.image}" class="history-image" alt="Ad Image">
-                            <span class="history-text">${entry.adContent.text}</span>
+        if (historyList) {
+            historyList.innerHTML = '';
+            
+            if (data.history && data.history.length > 0) {
+                const recentHistory = data.history.slice(-5).reverse(); // Show last 5 entries
+                recentHistory.forEach(entry => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    const date = new Date(entry.timestamp);
+                    
+                    // Create HTML for history item with image
+                    let historyContent = `
+                        <div class="history-info">
+                            <span class="history-category">${entry.category}</span>
+                            <span class="history-date">${date.toLocaleDateString()}</span>
                         </div>
                     `;
-                } else {
-                    historyContent += `
-                        <div class="history-content">
-                            <span class="history-text">${entry.adContent ? entry.adContent.text : 'No content available'}</span>
-                        </div>
-                    `;
-                }
-                
-                item.innerHTML = historyContent;
-                historyList.appendChild(item);
-            });
-        } else {
-            historyList.innerHTML = '<p>No history available</p>';
+                    
+                    if (entry.adContent && entry.adContent.image) {
+                        historyContent += `
+                            <div class="history-content">
+                                <img src="${entry.adContent.image}" class="history-image" alt="Ad Image">
+                                <span class="history-text">${entry.adContent.text}</span>
+                            </div>
+                        `;
+                    } else {
+                        historyContent += `
+                            <div class="history-content">
+                                <span class="history-text">${entry.adContent ? entry.adContent.text : 'No content available'}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    item.innerHTML = historyContent;
+                    historyList.appendChild(item);
+                });
+            } else {
+                historyList.innerHTML = '<p>No history available</p>';
+            }
         }
     });
 }
@@ -96,54 +101,59 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 // Initialize UI when popup opens
-document.addEventListener('DOMContentLoaded', updateUI);
+document.addEventListener('DOMContentLoaded', () => {
+    updateUI();
+    
+    // Handle history retention change
+    const historyRetention = document.getElementById("historyRetention");
+    if (historyRetention) {
+        historyRetention.addEventListener("change", (e) => {
+            const retention = e.target.value;
+            chrome.storage.local.set({ historyRetention: retention }, () => {
+                updateUI();
+            });
+        });
+    }
 
-// Handle history retention change
-document.getElementById("historyRetention").addEventListener("change", (e) => {
-    const retention = e.target.value;
-    chrome.storage.local.set({ historyRetention: retention }, () => {
-        updateUI();
+    // Clear history button
+    const clearHistory = document.getElementById("clearHistory");
+    if (clearHistory) {
+        clearHistory.addEventListener("click", () => {
+            chrome.storage.local.set({ history: [] }, () => {
+                updateUI();
+            });
+        });
+    }
+
+    // Reset all button
+    const reset = document.getElementById("reset");
+    if (reset) {
+        reset.addEventListener("click", () => {
+            chrome.storage.local.clear(() => {
+                updateUI();
+            });
+        });
+    }
+
+    // Tab switching functionality
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Remove active class from all links and hide all content
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.style.display = 'none');
+            
+            // Add active class to clicked link and show corresponding content
+            link.classList.add('active');
+            const tabId = link.getAttribute('data-tab');
+            const tabContent = document.getElementById(tabId);
+            if (tabContent) {
+                tabContent.style.display = 'block';
+            }
+        });
     });
-});
-
-// Clear history button
-document.getElementById("clearHistory").addEventListener("click", () => {
-    chrome.storage.local.set({ history: [] }, () => {
-        updateUI();
-    });
-});
-
-// Reset all button (clear everything)
-document.getElementById("reset").addEventListener("click", () => {
-    chrome.storage.local.clear(() => {
-        updateUI();
-    });
-});
-
-// Tab switching functionality
-const tabLinks = document.querySelectorAll('.tab-link');
-const tabContents = document.querySelectorAll('.tab-content');
-
-tabLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        // Remove active class from all links and hide all content
-        tabLinks.forEach(l => l.classList.remove('active'));
-        tabContents.forEach(c => c.style.display = 'none');
-        
-        // Add active class to clicked link and show corresponding content
-        link.classList.add('active');
-        const tabId = link.getAttribute('data-tab');
-        document.getElementById(tabId).style.display = 'block';
-    });
-});
-
-// Toggle sidebar visibility
-const toggleButton = document.getElementById('toggleSidebar');
-toggleButton.addEventListener('click', () => {
-    const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.toggle('collapsed');
-    const content = document.querySelector('.content');
-    content.style.marginLeft = sidebar.classList.contains('collapsed') ? '0' : '200px';
 });

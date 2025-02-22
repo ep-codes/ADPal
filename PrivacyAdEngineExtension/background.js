@@ -59,20 +59,14 @@ function updateAdWeights(history) {
     });
 }
 
-// Function to check response type and handle accordingly
-async function handleResponse(response, expectedType) {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const contentType = response.headers.get("content-type");
-    if (expectedType === 'json' && contentType && contentType.includes("application/json")) {
-        return await response.json();
-    } else if (expectedType === 'image' && contentType && contentType.includes("image")) {
-        return await response.blob();
-    } else {
-        throw new Error(`Expected ${expectedType} but got ${contentType}`);
-    }
+// Function to convert Blob to base64
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
 }
 
 // Function to fetch ad from the ad server
@@ -87,37 +81,35 @@ async function fetchAd(category) {
             notifyUIUpdate();
         });
 
-        // First get the ad text
-        const textResponse = await fetch(`http://localhost:3000/get_ad?category=${category}`, {
+        // Get the image ad
+        const response = await fetch(`http://localhost:3000/get_ad?category=${category}`, {
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'image/*'
             }
         });
 
-        const textData = await handleResponse(textResponse, 'json');
-        console.log('Received ad text:', textData);
-
-        // Then get the image
-        const imageResponse = await fetch(`http://localhost:3000/get_ad?category=${category}`, {
-            headers: {
-                'Accept': 'image/png'
+        if (!response.ok) {
+            const retryAfter = response.headers.get('Retry-After');
+            if (response.status === 429 && retryAfter) {
+                throw new Error(`Rate limit exceeded. Please wait ${retryAfter} seconds before trying again.`);
             }
-        });
+            throw new Error(`Failed to fetch ad: ${response.status}`);
+        }
 
-        const imageBlob = await handleResponse(imageResponse, 'image');
-        const imageUrl = URL.createObjectURL(imageBlob);
-        console.log('Created image URL:', imageUrl);
+        const imageBlob = await response.blob();
+        const base64Image = await blobToBase64(imageBlob);
+        console.log('Converted image to base64');
             
-        // Store both image and text
+        // Store the image
         const adContent = {
-            image: imageUrl,
-            text: textData.ad,
-            prompt: textData.prompt
+            image: base64Image,
+            text: "Check out this amazing product!", // Default text
+            prompt: category || "default" // Use category as prompt or "default"
         };
             
         console.log('Storing ad content:', adContent);
             
-        // Update storage with both image and text and clear loading state
+        // Update storage with image and clear loading state
         chrome.storage.local.set({ 
             "currentAd": adContent,
             "lastError": null,
@@ -133,7 +125,7 @@ async function fetchAd(category) {
         // Store the error state and clear loading state
         chrome.storage.local.set({
             "currentAd": {
-                text: "Error loading ad. Please try again.",
+                text: error.message || "Error loading ad. Please try again.",
                 image: null,
                 prompt: null
             },
