@@ -23,4 +23,4 @@ function inferInterest(text) {
 // Send inferred interest to the background script
 let pageText = extractText();
 let interest = inferInterest(pageText);
-chrome.runtime.sendMessage({ category: interest });
+// chrome.runtime.sendMessage({ category: interest });

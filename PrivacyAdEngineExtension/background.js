@@ -89,4 +89,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 // Example usage: Fetch an ad for technology category
-fetchAd('technology');
+// fetchAd('technology');
