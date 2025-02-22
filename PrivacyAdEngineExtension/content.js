@@ -23,4 +23,30 @@ function inferInterest(text) {
 // Send inferred interest to the background script
 let pageText = extractText();
 let interest = inferInterest(pageText);
-// chrome.runtime.sendMessage({ category: interest });
+chrome.runtime.sendMessage({ category: interest });
+
+// Listen for messages from the background script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'updateUI') {
+        chrome.storage.local.get(["currentAd"], (data) => {
+            let currentAd = data.currentAd;
+            if (currentAd && currentAd.startsWith('blob:')) {
+                // Create an image element
+                let img = document.createElement('img');
+                img.src = currentAd;
+                img.style.width = '200px';
+                img.style.height = '200px';
+                img.style.position = 'fixed';
+                img.style.top = '10px';
+                img.style.right = '10px';
+                img.style.zIndex = '10000';
+
+                // Append the image to the body
+                document.body.appendChild(img);
+            } else {
+                // Display the ad text
+                alert(currentAd);
+            }
+        });
+    }
+});

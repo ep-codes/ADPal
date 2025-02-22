@@ -58,19 +58,20 @@ function updateAdWeights(history) {
 // Function to fetch ad from the ad server
 function fetchAd(category) {
     fetch(`http://localhost:3000/get_ad?category=${category}`)
-        .then(response => response.json())
-        .then(data => {
-            const adText = data.ad;
-            console.log(`Fetched ad: ${adText}`);
+        .then(response => response.blob())
+        .then(blob => {
+            const imageUrl = URL.createObjectURL(blob);
+            console.log(`Fetched ad image: ${imageUrl}`);
             // Update current ad and add to history
-            chrome.storage.local.set({ "currentAd": adText }, () => {
-                addToHistory(category, adText);
+            chrome.storage.local.set({ "currentAd": imageUrl }, () => {
+                addToHistory(category, imageUrl);
             });
         })
         .catch(error => {
             console.error('Error fetching ad:', error);
+            console.error('Error fetching ad:', error.stack);
             // Store the error state
-            chrome.storage.local.set({ 
+            chrome.storage.local.set({
                 "currentAd": "Error loading ad. Please try again.",
                 "lastError": error.message
             }, () => {
