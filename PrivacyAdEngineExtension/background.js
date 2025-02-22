@@ -59,51 +59,61 @@ function updateAdWeights(history) {
     });
 }
 
+// Function to convert Blob to base64
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
 // Function to fetch ad from the ad server
 async function fetchAd(category) {
     try {
-        // First get the ad text
-        const textResponse = await fetch(`http://localhost:3000/get_ad?category=${category}`, {
+        // Set loading state
+        chrome.storage.local.set({ 
+            "isLoading": true,
+            "currentAd": null,
+            "lastError": null
+        }, () => {
+            notifyUIUpdate();
+        });
+
+        // Get the image ad
+        const response = await fetch(`http://localhost:3000/get_ad?category=${category}`, {
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'image/*'
             }
         });
 
-        if (!textResponse.ok) {
-            throw new Error(`Failed to fetch ad text: ${textResponse.status}`);
-        }
-
-        const textData = await textResponse.json();
-        console.log('Received ad text:', textData);
-
-        // Then get the image
-        const imageResponse = await fetch(`http://localhost:3000/get_ad?category=${category}`, {
-            headers: {
-                'Accept': 'image/png'
+        if (!response.ok) {
+            const retryAfter = response.headers.get('Retry-After');
+            if (response.status === 429 && retryAfter) {
+                throw new Error(`Rate limit exceeded. Please wait ${retryAfter} seconds before trying again.`);
             }
-        });
-
-        if (!imageResponse.ok) {
-            throw new Error(`Failed to fetch image: ${imageResponse.status}`);
+            throw new Error(`Failed to fetch ad: ${response.status}`);
         }
 
-        const blob = await imageResponse.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        console.log('Created image URL:', imageUrl);
+        const imageBlob = await response.blob();
+        const base64Image = await blobToBase64(imageBlob);
+        console.log('Converted image to base64');
             
-        // Store both image and text
+        // Store the image
         const adContent = {
-            image: imageUrl,
-            text: textData.ad,
-            prompt: textData.prompt
+            image: base64Image,
+            text: "Check out this amazing product!", // Default text
+            prompt: category || "default" // Use category as prompt or "default"
         };
             
         console.log('Storing ad content:', adContent);
             
-        // Update storage with both image and text
+        // Update storage with image and clear loading state
         chrome.storage.local.set({ 
             "currentAd": adContent,
-            "lastError": null
+            "lastError": null,
+            "isLoading": false
         }, () => {
             addToHistory(category, adContent);
             notifyUIUpdate();
@@ -112,14 +122,15 @@ async function fetchAd(category) {
         console.error('Error fetching ad:', error);
         console.error('Error stack:', error.stack);
         
-        // Store the error state
+        // Store the error state and clear loading state
         chrome.storage.local.set({
             "currentAd": {
-                text: "Error loading ad. Please try again.",
+                text: error.message || "Error loading ad. Please try again.",
                 image: null,
                 prompt: null
             },
-            "lastError": error.message
+            "lastError": error.message,
+            "isLoading": false
         }, () => {
             notifyUIUpdate();
         });
