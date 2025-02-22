@@ -2,11 +2,105 @@
 <html>
 <head>
     <title>Privacy Ad Settings</title>
-    <link rel="stylesheet" type="text/css" href="popup.css">
+    <style>
+        body {
+            width: 400px;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            min-height: 400px;
+        }
+        .sidebar {
+            width: 120px;
+            background: #f5f5f5;
+            padding: 10px;
+        }
+        .content {
+            flex: 1;
+            padding: 15px;
+        }
+        .ad-container {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #adImage {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        #adText {
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .history-item {
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .history-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        .history-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .history-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .history-text {
+            flex: 1;
+            font-size: 13px;
+        }
+        .settings-section {
+            margin-bottom: 20px;
+        }
+        .button-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        select {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <button id="toggleSidebar">Toggle Sidebar</button>
         <div class="sidebar">
             <h2>Navigation</h2>
             <ul>
@@ -17,7 +111,10 @@
         <div class="content">
             <div id="ad-display" class="tab-content">
                 <h2>Current Ad</h2>
-                <p id="adText">Loading...</p>
+                <div class="ad-container">
+                    <img id="adImage" style="display: none;" alt="Generated Ad">
+                    <p id="adText">Loading...</p>
+                </div>
             </div>
             <div id="history" class="tab-content" style="display:none;">
                 <h2>History Settings</h2>

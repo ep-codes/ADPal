@@ -3,7 +3,22 @@ function updateUI() {
     chrome.storage.local.get(['currentAd', 'history', 'historyRetention', 'lastError'], (data) => {
         // Update current ad
         const adElement = document.getElementById("adText");
-        adElement.innerText = data.currentAd || "No ad selected";
+        const adImageElement = document.getElementById("adImage");
+        
+        if (data.currentAd) {
+            if (data.currentAd.image) {
+                adImageElement.src = data.currentAd.image;
+                adImageElement.style.display = 'block';
+                adElement.innerText = data.currentAd.text || '';
+            } else {
+                adImageElement.style.display = 'none';
+                adElement.innerText = data.currentAd.text || 'No ad selected';
+            }
+        } else {
+            adImageElement.style.display = 'none';
+            adElement.innerText = 'No ad selected';
+        }
+
         if (data.lastError) {
             adElement.classList.add('error');
             console.error('Last error:', data.lastError);
@@ -25,11 +40,31 @@ function updateUI() {
                 const item = document.createElement('div');
                 item.className = 'history-item';
                 const date = new Date(entry.timestamp);
-                item.innerHTML = `
-                    <span class="history-category">${entry.category}</span>
-                    <span class="history-date">${date.toLocaleDateString()}</span>
-                    <span class="history-ad">${entry.adText}</span>
+                
+                // Create HTML for history item with image
+                let historyContent = `
+                    <div class="history-info">
+                        <span class="history-category">${entry.category}</span>
+                        <span class="history-date">${date.toLocaleDateString()}</span>
+                    </div>
                 `;
+                
+                if (entry.adContent && entry.adContent.image) {
+                    historyContent += `
+                        <div class="history-content">
+                            <img src="${entry.adContent.image}" class="history-image" alt="Ad Image">
+                            <span class="history-text">${entry.adContent.text}</span>
+                        </div>
+                    `;
+                } else {
+                    historyContent += `
+                        <div class="history-content">
+                            <span class="history-text">${entry.adContent ? entry.adContent.text : 'No content available'}</span>
+                        </div>
+                    `;
+                }
+                
+                item.innerHTML = historyContent;
                 historyList.appendChild(item);
             });
         } else {
