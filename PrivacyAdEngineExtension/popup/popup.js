@@ -1,22 +1,35 @@
 // Update UI with current data
 function updateUI() {
-    chrome.storage.local.get(['currentAd', 'history', 'historyRetention', 'lastError'], (data) => {
+    chrome.storage.local.get(['currentAd', 'history', 'historyRetention', 'lastError', 'isLoading'], (data) => {
         // Update current ad
+        const adContainer = document.getElementById("adContainer");
         const adElement = document.getElementById("adText");
         const adImageElement = document.getElementById("adImage");
+        const loadingElement = document.getElementById("loadingSpinner");
         
-        if (data.currentAd) {
-            if (data.currentAd.image) {
-                adImageElement.src = data.currentAd.image;
-                adImageElement.style.display = 'block';
-                adElement.innerText = data.currentAd.text || '';
+        // Handle loading state
+        if (data.isLoading) {
+            loadingElement.style.display = 'block';
+            adContainer.classList.add('loading');
+            adElement.innerText = 'Loading...';
+            adImageElement.style.display = 'none';
+        } else {
+            loadingElement.style.display = 'none';
+            adContainer.classList.remove('loading');
+            
+            if (data.currentAd) {
+                if (data.currentAd.image) {
+                    adImageElement.src = data.currentAd.image;
+                    adImageElement.style.display = 'block';
+                    adElement.innerText = data.currentAd.text || '';
+                } else {
+                    adImageElement.style.display = 'none';
+                    adElement.innerText = data.currentAd.text || 'No ad selected';
+                }
             } else {
                 adImageElement.style.display = 'none';
-                adElement.innerText = data.currentAd.text || 'No ad selected';
+                adElement.innerText = 'No ad selected';
             }
-        } else {
-            adImageElement.style.display = 'none';
-            adElement.innerText = 'No ad selected';
         }
 
         if (data.lastError) {

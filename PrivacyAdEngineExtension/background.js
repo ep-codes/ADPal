@@ -59,9 +59,34 @@ function updateAdWeights(history) {
     });
 }
 
+// Function to check response type and handle accordingly
+async function handleResponse(response, expectedType) {
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const contentType = response.headers.get("content-type");
+    if (expectedType === 'json' && contentType && contentType.includes("application/json")) {
+        return await response.json();
+    } else if (expectedType === 'image' && contentType && contentType.includes("image")) {
+        return await response.blob();
+    } else {
+        throw new Error(`Expected ${expectedType} but got ${contentType}`);
+    }
+}
+
 // Function to fetch ad from the ad server
 async function fetchAd(category) {
     try {
+        // Set loading state
+        chrome.storage.local.set({ 
+            "isLoading": true,
+            "currentAd": null,
+            "lastError": null
+        }, () => {
+            notifyUIUpdate();
+        });
+
         // First get the ad text
         const textResponse = await fetch(`http://localhost:3000/get_ad?category=${category}`, {
             headers: {
@@ -69,11 +94,7 @@ async function fetchAd(category) {
             }
         });
 
-        if (!textResponse.ok) {
-            throw new Error(`Failed to fetch ad text: ${textResponse.status}`);
-        }
-
-        const textData = await textResponse.json();
+        const textData = await handleResponse(textResponse, 'json');
         console.log('Received ad text:', textData);
 
         // Then get the image
@@ -83,12 +104,8 @@ async function fetchAd(category) {
             }
         });
 
-        if (!imageResponse.ok) {
-            throw new Error(`Failed to fetch image: ${imageResponse.status}`);
-        }
-
-        const blob = await imageResponse.blob();
-        const imageUrl = URL.createObjectURL(blob);
+        const imageBlob = await handleResponse(imageResponse, 'image');
+        const imageUrl = URL.createObjectURL(imageBlob);
         console.log('Created image URL:', imageUrl);
             
         // Store both image and text
@@ -100,10 +117,11 @@ async function fetchAd(category) {
             
         console.log('Storing ad content:', adContent);
             
-        // Update storage with both image and text
+        // Update storage with both image and text and clear loading state
         chrome.storage.local.set({ 
             "currentAd": adContent,
-            "lastError": null
+            "lastError": null,
+            "isLoading": false
         }, () => {
             addToHistory(category, adContent);
             notifyUIUpdate();
@@ -112,14 +130,15 @@ async function fetchAd(category) {
         console.error('Error fetching ad:', error);
         console.error('Error stack:', error.stack);
         
-        // Store the error state
+        // Store the error state and clear loading state
         chrome.storage.local.set({
             "currentAd": {
                 text: "Error loading ad. Please try again.",
                 image: null,
                 prompt: null
             },
-            "lastError": error.message
+            "lastError": error.message,
+            "isLoading": false
         }, () => {
             notifyUIUpdate();
         });
