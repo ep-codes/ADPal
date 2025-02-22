@@ -1,8 +1,15 @@
 // Update UI with current data
 function updateUI() {
-    chrome.storage.local.get(['currentAd', 'history', 'historyRetention'], (data) => {
+    chrome.storage.local.get(['currentAd', 'history', 'historyRetention', 'lastError'], (data) => {
         // Update current ad
-        document.getElementById("adText").innerText = data.currentAd || "No ad selected";
+        const adElement = document.getElementById("adText");
+        adElement.innerText = data.currentAd || "No ad selected";
+        if (data.lastError) {
+            adElement.classList.add('error');
+            console.error('Last error:', data.lastError);
+        } else {
+            adElement.classList.remove('error');
+        }
         
         // Update history retention dropdown
         const retention = data.historyRetention || 'month';
@@ -31,7 +38,16 @@ function updateUI() {
     });
 }
 
-// Initialize UI
+// Set up message listener for updates
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === 'updateUI') {
+        updateUI();
+    }
+    // Must return false since we're not using sendResponse
+    return false;
+});
+
+// Initialize UI when popup opens
 document.addEventListener('DOMContentLoaded', updateUI);
 
 // Handle history retention change
@@ -56,39 +72,22 @@ document.getElementById("reset").addEventListener("click", () => {
     });
 });
 
-// Handle Save Preferences button click
-document.getElementById('saveOptOut').addEventListener('click', () => {
-    const checkboxes = document.querySelectorAll('.opt-out-checkbox');
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            optOutTopic(checkbox.value);  // Call optOutTopic for each selected checkbox
-        }
-    });
-    alert('Your preferences have been saved!');
-});
-
 // Tab switching functionality
 const tabLinks = document.querySelectorAll('.tab-link');
 const tabContents = document.querySelectorAll('.tab-content');
 
 tabLinks.forEach(link => {
-    link.addEventListener('click', function(event) {
-        event.preventDefault(); // Prevent default anchor behavior
-        const targetTab = this.dataset.tab;
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
         
-        // Hide all tab contents
-        tabContents.forEach(content => {
-            content.style.display = 'none';
-        });
+        // Remove active class from all links and hide all content
+        tabLinks.forEach(l => l.classList.remove('active'));
+        tabContents.forEach(c => c.style.display = 'none');
         
-        // Remove active class from all links
-        tabLinks.forEach(link => {
-            link.classList.remove('active');
-        });
-        
-        // Show the selected tab content
-        document.getElementById(targetTab).style.display = 'block';
-        this.classList.add('active');
+        // Add active class to clicked link and show corresponding content
+        link.classList.add('active');
+        const tabId = link.getAttribute('data-tab');
+        document.getElementById(tabId).style.display = 'block';
     });
 });
 

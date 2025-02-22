@@ -26,8 +26,17 @@ function addToHistory(category, adText) {
         // Update weights based on history
         updateAdWeights(history);
         
-        // Save updated history
-        chrome.storage.local.set({ history });
+        // Save updated history and notify any open popups
+        chrome.storage.local.set({ history }, () => {
+            notifyUIUpdate();
+        });
+    });
+}
+
+// Safely notify any open popup windows to update their UI
+function notifyUIUpdate() {
+    chrome.runtime.sendMessage({ action: 'updateUI' }).catch(() => {
+        // Ignore errors when popup is not open
     });
 }
 
@@ -42,63 +51,40 @@ function updateAdWeights(history) {
     const categoryFreq = {};
     recent.forEach(entry => {
         categoryFreq[entry.category] = (categoryFreq[entry.category] || 0) + 1;
-        topicFrequencies[entry.category] = (topicFrequencies[entry.category] || 0) + 1; // Track overall topic frequency
-    });
-}
-
-// Function to opt out of a topic
-function optOutTopic(topic) {
-    chrome.storage.local.get(['optedOutTopics'], (data) => {
-        let optedOutTopics = data.optedOutTopics || [];
-        if (!optedOutTopics.includes(topic)) {
-            optedOutTopics.push(topic);
-            chrome.storage.local.set({ optedOutTopics: optedOutTopics }, () => {
-                console.log(`Opted out of topic: ${topic}`);
-            });
-        }
-    });
-}
-
-// Function to check if a topic is opted out
-function isOptedOut(topic, callback) {
-    chrome.storage.local.get(['optedOutTopics'], (data) => {
-        const optedOutTopics = data.optedOutTopics || [];
-        callback(optedOutTopics.includes(topic));
+        topicFrequencies[entry.category] = (topicFrequencies[entry.category] || 0) + 1;
     });
 }
 
 // Function to fetch ad from the ad server
 function fetchAd(category) {
-    isOptedOut(category, (optedOut) => {
-        if (optedOut) {
-            console.log(`Skipping ad fetch for opted-out category: ${category}`);
-            return;
-        }
-        fetch(`http://localhost:3000/get_ad?category=${category}`)
-            .then(response => response.json())
-            .then(data => {
-                const adText = data.ad;
-                console.log(`Fetched ad: ${adText}`);
-                chrome.storage.local.set({ "currentAd": adText });
-            })
-            .catch(error => {
-                console.error('Error fetching ad:', error);
+    fetch(`http://localhost:3000/get_ad?category=${category}`)
+        .then(response => response.json())
+        .then(data => {
+            const adText = data.ad;
+            console.log(`Fetched ad: ${adText}`);
+            // Update current ad and add to history
+            chrome.storage.local.set({ "currentAd": adText }, () => {
+                addToHistory(category, adText);
             });
-    });
+        })
+        .catch(error => {
+            console.error('Error fetching ad:', error);
+            // Store the error state
+            chrome.storage.local.set({ 
+                "currentAd": "Error loading ad. Please try again.",
+                "lastError": error.message
+            }, () => {
+                notifyUIUpdate();
+            });
+        });
 }
 
-// Listen for messages from content.js
+// Listen for messages from content.js or popup.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.category) {
-        if (message.fetchAd) {
-            fetchAd(message.category);
-        } else {
-            chrome.storage.local.get(['currentAd'], (data) => {
-                const adText = data.currentAd;
-                chrome.storage.local.set({ "currentAd": adText });
-                addToHistory(message.category, adText);
-            });
-        }
+        fetchAd(message.category);
+        // Must return false since we're not using sendResponse
+        return false;
     }
 });
 
