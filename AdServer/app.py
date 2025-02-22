@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query, Header, Request
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 import logging
@@ -10,6 +10,8 @@ import time
 from collections import defaultdict
 import json
 import re
+import requests
+
 
 # Load environment variables
 load_dotenv()
@@ -51,14 +53,11 @@ def check_rate_limit(ip: str) -> bool:
     request_history[ip].append(now)
     return True
 
-import requests
-
-import requests
-
 @app.get("/get_ad")
 async def get_ad(
     request: Request,
-    category: Optional[str] = Query(None, description="Category for the ad")
+    category: Optional[str] = Query(None, description="Category for the ad"),
+    accept: Optional[str] = Query(None, description="Accept image")
 ):
     """
     Generate an AI image for a specific category or default prompt
