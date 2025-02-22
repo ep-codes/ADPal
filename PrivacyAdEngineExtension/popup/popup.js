@@ -55,3 +55,48 @@ document.getElementById("reset").addEventListener("click", () => {
         updateUI();
     });
 });
+
+// Handle Save Preferences button click
+document.getElementById('saveOptOut').addEventListener('click', () => {
+    const checkboxes = document.querySelectorAll('.opt-out-checkbox');
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            optOutTopic(checkbox.value);  // Call optOutTopic for each selected checkbox
+        }
+    });
+    alert('Your preferences have been saved!');
+});
+
+// Tab switching functionality
+const tabLinks = document.querySelectorAll('.tab-link');
+const tabContents = document.querySelectorAll('.tab-content');
+
+tabLinks.forEach(link => {
+    link.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default anchor behavior
+        const targetTab = this.dataset.tab;
+        
+        // Hide all tab contents
+        tabContents.forEach(content => {
+            content.style.display = 'none';
+        });
+        
+        // Remove active class from all links
+        tabLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Show the selected tab content
+        document.getElementById(targetTab).style.display = 'block';
+        this.classList.add('active');
+    });
+});
+
+// Toggle sidebar visibility
+const toggleButton = document.getElementById('toggleSidebar');
+toggleButton.addEventListener('click', () => {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('collapsed');
+    const content = document.querySelector('.content');
+    content.style.marginLeft = sidebar.classList.contains('collapsed') ? '0' : '200px';
+});

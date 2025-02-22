@@ -1,22 +1,3 @@
-// Sample ads for different categories with weights
-const ads = {
-    "technology": [
-        { text: "Check out the latest smartphones at TechStore!", weight: 1 },
-        { text: "Discover cutting-edge laptops at TechStore!", weight: 1 },
-        { text: "Explore smart home devices at TechStore!", weight: 1 }
-    ],
-    "sports": [
-        { text: "Get your sports gear at SportsWorld!", weight: 1 },
-        { text: "Premium fitness equipment at SportsWorld!", weight: 1 },
-        { text: "Athletic wear collection at SportsWorld!", weight: 1 }
-    ],
-    "finance": [
-        { text: "Invest smarter with FinTechPro!", weight: 1 },
-        { text: "Secure your future with FinTechPro!", weight: 1 },
-        { text: "Expert financial advice at FinTechPro!", weight: 1 }
-    ]
-};
-
 // Add a new object to track topic frequencies
 const topicFrequencies = {};
 
@@ -52,11 +33,6 @@ function addToHistory(category, adText) {
 
 // Update ad weights based on user history and topic frequency
 function updateAdWeights(history) {
-    // Reset weights
-    Object.keys(ads).forEach(category => {
-        ads[category].forEach(ad => ad.weight = 1);
-    });
-    
     // Analyze last 24 hours of history
     const recent = history.filter(entry => {
         return (Date.now() - entry.timestamp) <= 24 * 60 * 60 * 1000;
@@ -68,47 +44,47 @@ function updateAdWeights(history) {
         categoryFreq[entry.category] = (categoryFreq[entry.category] || 0) + 1;
         topicFrequencies[entry.category] = (topicFrequencies[entry.category] || 0) + 1; // Track overall topic frequency
     });
-    
-    // Adjust weights based on frequency
-    Object.keys(categoryFreq).forEach(category => {
-        if (ads[category]) {
-            ads[category].forEach(ad => {
-                // Increase weight based on overall topic frequency
-                ad.weight += topicFrequencies[category] || 0; // Add frequency weight
-                ad.weight = Math.max(1, ad.weight); // Ensure minimum weight
+}
+
+// Function to opt out of a topic
+function optOutTopic(topic) {
+    chrome.storage.local.get(['optedOutTopics'], (data) => {
+        let optedOutTopics = data.optedOutTopics || [];
+        if (!optedOutTopics.includes(topic)) {
+            optedOutTopics.push(topic);
+            chrome.storage.local.set({ optedOutTopics: optedOutTopics }, () => {
+                console.log(`Opted out of topic: ${topic}`);
             });
         }
     });
 }
 
-// Select an ad based on weights
-function selectAd(category) {
-    if (!ads[category]) return "Discover amazing products!";
-    
-    const categoryAds = ads[category];
-    const totalWeight = categoryAds.reduce((sum, ad) => sum + ad.weight, 0);
-    let random = Math.random() * totalWeight;
-    
-    for (const ad of categoryAds) {
-        random -= ad.weight;
-        if (random <= 0) return ad.text;
-    }
-    
-    return categoryAds[0].text;
+// Function to check if a topic is opted out
+function isOptedOut(topic, callback) {
+    chrome.storage.local.get(['optedOutTopics'], (data) => {
+        const optedOutTopics = data.optedOutTopics || [];
+        callback(optedOutTopics.includes(topic));
+    });
 }
 
 // Function to fetch ad from the ad server
 function fetchAd(category) {
-    fetch(`http://localhost:3000/get_ad?category=${category}`)  // Update with the correct server URL
-        .then(response => response.json())
-        .then(data => {
-            const adText = data.ad;
-            console.log(`Fetched ad: ${adText}`);  // Log the fetched ad
-            chrome.storage.local.set({ "currentAd": adText });  // Store the ad
-        })
-        .catch(error => {
-            console.error('Error fetching ad:', error);
-        });
+    isOptedOut(category, (optedOut) => {
+        if (optedOut) {
+            console.log(`Skipping ad fetch for opted-out category: ${category}`);
+            return;
+        }
+        fetch(`http://localhost:3000/get_ad?category=${category}`)
+            .then(response => response.json())
+            .then(data => {
+                const adText = data.ad;
+                console.log(`Fetched ad: ${adText}`);
+                chrome.storage.local.set({ "currentAd": adText });
+            })
+            .catch(error => {
+                console.error('Error fetching ad:', error);
+            });
+    });
 }
 
 // Listen for messages from content.js
@@ -117,9 +93,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.fetchAd) {
             fetchAd(message.category);
         } else {
-            let adText = selectAd(message.category);
-            chrome.storage.local.set({ "currentAd": adText });
-            addToHistory(message.category, adText);
+            chrome.storage.local.get(['currentAd'], (data) => {
+                const adText = data.currentAd;
+                chrome.storage.local.set({ "currentAd": adText });
+                addToHistory(message.category, adText);
+            });
         }
     }
 });

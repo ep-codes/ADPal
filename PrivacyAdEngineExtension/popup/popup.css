@@ -2,12 +2,15 @@ body {
     width: 350px;
     padding: 15px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    display: flex;
 }
 
 h2 {
@@ -16,6 +19,48 @@ h2 {
     font-size: 16px;
     padding-bottom: 8px;
     border-bottom: 1px solid #eee;
+}
+
+.sidebar {
+    width: 200px;
+    background-color: #f4f4f4;
+    padding: 15px;
+    border-right: 1px solid #ddd;
+    transition: width 0.3s;
+}
+
+.sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.sidebar h2 {
+    font-size: 18px;
+    margin: 0 0 10px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 5px 0;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333;
+    padding: 8px;
+    display: block;
+    border-radius: 4px;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+    background-color: #007bff;
+    color: white;
 }
 
 .settings-section {
@@ -60,6 +105,26 @@ button:hover {
     opacity: 0.9;
 }
 
+#toggleSidebar {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+#toggleSidebar:hover {
+    background-color: #0056b3;
+}
+
+.content {
+    padding: 15px;
+    flex-grow: 1;
+}
+
 .history-section {
     margin-top: 10px;
 }
@@ -89,4 +154,12 @@ button:hover {
     grid-column: 1 / -1;
     color: #333;
     margin-top: 4px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }

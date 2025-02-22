@@ -6,27 +6,46 @@
 </head>
 <body>
     <div class="container">
-        <h2>Current Ad</h2>
-        <p id="adText">Loading...</p>
-        
-        <h2>History Settings</h2>
-        <div class="settings-section">
-            <label for="historyRetention">Keep History For:</label>
-            <select id="historyRetention">
-                <option value="week">1 Week</option>
-                <option value="month" selected>1 Month</option>
-                <option value="year">1 Year</option>
-            </select>
+        <button id="toggleSidebar">Toggle Sidebar</button>
+        <div class="sidebar">
+            <h2>Navigation</h2>
+            <ul>
+                <li><a href="#" class="tab-link active" data-tab="ad-display">Ad Display</a></li>
+                <li><a href="#" class="tab-link" data-tab="history">History</a></li>
+                <li><a href="#" class="tab-link" data-tab="opt-out">Opt-Out Preferences</a></li>
+            </ul>
         </div>
-        
-        <div class="button-section">
-            <button id="clearHistory">Clear History</button>
-            <button id="reset">Reset All</button>
-        </div>
-        
-        <div class="history-section">
-            <h2>Recent History</h2>
-            <div id="historyList"></div>
+        <div class="content">
+            <div id="ad-display" class="tab-content">
+                <h2>Current Ad</h2>
+                <p id="adText">Loading...</p>
+            </div>
+            <div id="history" class="tab-content" style="display:none;">
+                <h2>History Settings</h2>
+                <div class="settings-section">
+                    <label for="historyRetention">Keep History For:</label>
+                    <select id="historyRetention">
+                        <option value="week">1 Week</option>
+                        <option value="month" selected>1 Month</option>
+                        <option value="year">1 Year</option>
+                    </select>
+                </div>
+                <div class="button-section">
+                    <button id="clearHistory">Clear History</button>
+                    <button id="reset">Reset All</button>
+                </div>
+                <h2>Recent History</h2>
+                <div id="historyList"></div>
+            </div>
+            <div id="opt-out" class="tab-content" style="display:none;">
+                <h2>Opt-Out Preferences</h2>
+                <div class="opt-out-section">
+                    <label><input type="checkbox" value="technology" class="opt-out-checkbox"> Technology</label><br>
+                    <label><input type="checkbox" value="sports" class="opt-out-checkbox"> Sports</label><br>
+                    <label><input type="checkbox" value="finance" class="opt-out-checkbox"> Finance</label><br>
+                    <button id="saveOptOut">Save Preferences</button>
+                </div>
+            </div>
         </div>
     </div>
     <script src="popup.js"></script>
