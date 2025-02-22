@@ -3,18 +3,22 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import json
+import pandas as pd
 
-# Sample dataset
-data = [
-    ("AI is transforming technology.", "technology"),
-    ("Bitcoin is a volatile investment.", "finance"),
-    ("The NBA finals are exciting.", "sports"),
-    ("New smartphones have better cameras.", "technology"),
-    ("Stock market trends are unpredictable.", "finance"),
-    ("Football is the most popular sport.", "sports")
-]
-
-texts, labels = zip(*data)
+# Read data from CSV file
+try:
+    df = pd.read_csv('trending.csv')
+    texts = df.iloc[:, 0].tolist()  # First column contains text
+    labels = df.iloc[:, 1].tolist()  # Second column contains labels
+except FileNotFoundError:
+    print("Error: trending.csv not found. Please ensure the file exists in the same directory.")
+    exit(1)
+except pd.errors.EmptyDataError:
+    print("Error: The CSV file is empty.")
+    exit(1)
+except Exception as e:
+    print(f"Error reading CSV file: {str(e)}")
+    exit(1)
 
 # Tokenize text
 tokenizer = Tokenizer(num_words=5000, oov_token="<OOV>")
