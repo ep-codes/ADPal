@@ -104,6 +104,58 @@ chrome.runtime.onMessage.addListener((message) => {
 document.addEventListener('DOMContentLoaded', () => {
     updateUI();
     
+    // Navigation functionality
+    const toggleNav = document.getElementById('toggleNav');
+    const navMenu = document.getElementById('navMenu');
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // Initialize default tab (ad-display)
+    tabContents.forEach(content => {
+        content.style.display = content.id === 'ad-display' ? 'block' : 'none';
+    });
+
+    // Toggle navigation menu
+    toggleNav.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navMenu.classList.toggle('show');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!navMenu.contains(e.target) && !toggleNav.contains(e.target)) {
+            navMenu.classList.remove('show');
+        }
+    });
+
+    // Handle tab switching
+    tabLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+
+            // Remove active class from all links
+            tabLinks.forEach(tabLink => {
+                tabLink.classList.remove('active');
+            });
+
+            // Show selected tab content
+            const tabId = link.getAttribute('data-tab');
+            const tabContent = document.getElementById(tabId);
+            if (tabContent) {
+                tabContent.style.display = 'block';
+                // Add active class to clicked link
+                link.classList.add('active');
+                // Close the navigation menu
+                navMenu.classList.remove('show');
+            }
+        });
+    });
+
     // Handle history retention change
     const historyRetention = document.getElementById("historyRetention");
     if (historyRetention) {
@@ -135,25 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Tab switching functionality
-    const tabLinks = document.querySelectorAll('.tab-link');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            // Remove active class from all links and hide all content
-            tabLinks.forEach(l => l.classList.remove('active'));
-            tabContents.forEach(c => c.style.display = 'none');
-            
-            // Add active class to clicked link and show corresponding content
-            link.classList.add('active');
-            const tabId = link.getAttribute('data-tab');
-            const tabContent = document.getElementById(tabId);
-            if (tabContent) {
-                tabContent.style.display = 'block';
-            }
+    // Toggle the sidebar on click
+    const toggleSidebarBtn = document.getElementById('toggleSidebar');
+    if (toggleSidebarBtn) {
+        toggleSidebarBtn.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
         });
-    });
+    }
 });

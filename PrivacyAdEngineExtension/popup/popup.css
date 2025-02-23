@@ -4,62 +4,81 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     margin: 0;
     padding: 0;
+    color: white;
+    background-color: #001f3f;
 }
 
 .container {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    display: flex;
+    position: relative;
+    width: 100%;
 }
 
 h2 {
-    color: #333;
+    color: white;
     margin: 0;
     font-size: 16px;
     padding-bottom: 8px;
     border-bottom: 1px solid #eee;
 }
 
+.dropdown-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 10px;
+}
+
+.dropdown-button:hover {
+    background-color: #0056b3;
+}
+
 .sidebar {
-    width: 200px;
-    background-color: #f4f4f4;
+    display: none;
+    background-color: #001a33;
     padding: 15px;
-    border-right: 1px solid #ddd;
-    transition: width 0.3s;
+    border-right: 1px solid #004080;
+    position: absolute;
+    top: 45px;
+    left: 10px;
+    min-width: 200px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    z-index: 1000;
 }
 
-.sidebar.collapsed {
-    width: 0;
+.sidebar.show {
+    display: block;
+}
+
+.dropdown-menu {
+    list-style: none;
     padding: 0;
-    overflow: hidden;
+    margin: 0;
 }
 
-.sidebar h2 {
-    font-size: 18px;
-    margin: 0 0 10px;
-}
-
-.sidebar ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.sidebar ul li {
+.dropdown-menu li {
     margin: 5px 0;
 }
 
-.sidebar ul li a {
+.dropdown-menu li a {
     text-decoration: none;
-    color: #333;
+    color: white;
     padding: 8px;
     display: block;
     border-radius: 4px;
+    background: linear-gradient(to right, #004080, #007bff);
 }
 
-.sidebar ul li a:hover,
-.sidebar ul li a.active {
-    background-color: #007bff;
+.dropdown-menu li a:hover,
+.dropdown-menu li a.active {
+    background: linear-gradient(to right, #007bff, #00aaff);
     color: white;
 }
 
@@ -97,7 +116,7 @@ button {
 }
 
 #reset {
-    background-color: #ff4444;
+    background-color: #004080;
     color: white;
 }
 
@@ -105,24 +124,72 @@ button:hover {
     opacity: 0.9;
 }
 
-#toggleSidebar {
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    cursor: pointer;
+.nav-wrapper {
+    position: relative;
+    margin: 10px;
+}
+
+.nav-button {
     background-color: #007bff;
     color: white;
     border: none;
+    padding: 8px 12px;
     border-radius: 4px;
-    transition: background-color 0.2s;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-#toggleSidebar:hover {
+.nav-button:hover {
     background-color: #0056b3;
 }
 
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #001a33;
+    min-width: 200px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    margin-top: 5px;
+    z-index: 1000;
+}
+
+.nav-menu.show {
+    display: block;
+}
+
+.nav-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-menu ul li {
+    margin: 5px 0;
+}
+
+.nav-menu ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 8px;
+    display: block;
+    border-radius: 4px;
+    background: linear-gradient(to right, #004080, #007bff);
+}
+
+.nav-menu ul li a:hover,
+.nav-menu ul li a.active {
+    background: linear-gradient(to right, #007bff, #00aaff);
+}
+
 .content {
+    margin-top: 10px;
     padding: 15px;
     flex-grow: 1;
+    color: white;
 }
 
 .history-section {
