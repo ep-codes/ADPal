@@ -111,8 +111,6 @@ async def get_ad(
         inputs = {
             "prompt": ad_data["prompt"],
             "negative_prompt": "no blur, no distortion, no text",
-            "height": 512,
-            "width": 512,
         }
 
         logger.info(f"Generating ad for category: {category}")

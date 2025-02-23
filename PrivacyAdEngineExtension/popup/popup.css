@@ -283,3 +283,10 @@ button:hover {
     padding: 20px;
     text-align: center;
 }
+
+.ad-container img {
+    max-width: 70%;
+    height: auto;
+    display: block;
+    margin: 0 auto
+}

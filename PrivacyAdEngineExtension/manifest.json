@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Privacy Ad Engine",
+  "name": "ADVeil",
   "version": "1.0",
   "description": "A privacy-focused ad engine that uses contextual targeting.",
   "permissions": ["activeTab", "storage"],
@@ -22,6 +22,7 @@
     }
   ],
   "action": {
+    "default_icon": "./Logo.png",
     "default_popup": "popup/popup.html"
   }
 }
