@@ -11,16 +11,16 @@ function inferInterest(text) {
         "Sci/Tech": ["AI", "smartphone", "laptop", "blockchain", "robotics", "biotech", "quantum computing", "cybersecurity", "space exploration", "machine learning"],
         "Entertainment": ["movies", "TV shows", "celebrities", "Hollywood", "Bollywood", "music", "streaming", "theater", "comedy", "awards"],
         "Sports": ["football", "soccer", "basketball", "tennis", "baseball", "hockey", "golf", "MMA", "cricket", "Olympics"],
-        "U.S.": ["politics", "elections", "economy", "policy", "crime", "society", "education", "immigration", "supreme court", "local news"],
+        "Poltics": ["politics", "elections", "economy", "policy", "crime", "society", "education", "immigration", "supreme court", "local news"],
         "World": ["geopolitics", "diplomacy", "war", "international relations", "trade", "human rights", "global economy", "climate change", "UN", "foreign affairs"],
         "Health": ["medicine", "nutrition", "fitness", "mental health", "pandemics", "vaccines", "hospitals", "diseases", "public health", "wellness"],
         "Top News": ["breaking news", "headlines", "trending", "major events", "world leaders", "elections", "emergency", "government", "laws", "public opinion"],
-        "Europe": ["EU", "Brexit", "France", "Germany", "UK", "Spain", "Italy", "NATO", "European economy", "politics"],
-        "Italia": ["Rome", "Milan", "Vatican", "Italian politics", "culture", "fashion", "Serie A", "Italian economy", "tourism", "gastronomy"],
+        "European Affairs": ["EU", "Brexit", "France", "Germany", "UK", "Spain", "Italy", "NATO", "European economy", "politics"],
+        "Foreign Affairs": ["Rome", "Milan", "Vatican", "Italian politics", "culture", "fashion", "Serie A", "Italian economy", "tourism", "gastronomy"],
         "Software and Development": ["coding", "programming", "JavaScript", "Python", "frameworks", "open-source", "cloud computing", "DevOps", "software engineering", "AI development"],
-        "Music Feeds": ["pop", "rock", "hip-hop", "EDM", "jazz", "classical", "concerts", "albums", "Grammy", "music industry"],
+        "Music": ["pop", "rock", "hip-hop", "EDM", "jazz", "classical", "concerts", "albums", "Grammy", "music industry"],
         "Toons": ["cartoons", "animation", "anime", "Disney", "Pixar", "manga", "comics", "superheroes", "Netflix animation", "voice acting"],
-        "General": ["trending topics", "culture", "lifestyle", "internet", "memes", "viral content", "science", "technology", "history", "education"]
+        "Lifestyle": ["trending topics", "culture", "lifestyle", "internet", "memes", "viral content", "science", "technology", "history", "education"]
     };
 
     for (const category in keywords) {

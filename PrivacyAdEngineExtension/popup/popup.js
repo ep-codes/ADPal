@@ -19,7 +19,7 @@ function updateUI() {
             
             if (data.currentAd) {
                 if (data.currentAd.image) {
-                    adImageElement.src = data.currentAd.image; // Base64 image can be directly set as src
+                    adImageElement.src = data.currentAd.image;
                     adImageElement.style.display = 'block';
                     adElement.innerText = data.currentAd.text || '';
                 } else {
@@ -53,63 +53,113 @@ function updateUI() {
             // Update pie chart when history is updated
             updatePieChart(data.history || []);
         }
-        
-        // Update pie chart
-        let pieChart = null;
+    });
+}
 
-        function updatePieChart(history) {
-            const categories = {};
-            
-            // Count occurrences of each category
-            history.forEach(item => {
-                if (item.category) {
-                    categories[item.category] = (categories[item.category] || 0) + 1;
-                }
-            });
+// Initialize pie chart variable outside any function
+let pieChart = null;
 
-            // Prepare data for the chart
-            const data = {
-                labels: Object.keys(categories),
-                datasets: [{
-                    data: Object.values(categories),
-                    backgroundColor: [
-                        '#FF6384',
-                        '#36A2EB',
-                        '#FFCE56',
-                        '#4BC0C0',
-                        '#9966FF',
-                        '#FF9F40'
-                    ]
-                }]
-            };
+function updatePieChart(history) {
+    // Get the canvas element
+    const canvas = document.getElementById('pieChart');
+    if (!canvas) return; // Exit if canvas doesn't exist
 
-            // Get the canvas element
-            const ctx = document.getElementById('pieChart').getContext('2d');
+    const categories = {};
+    const totalEntries = history.length;
+    
+    // Count occurrences of each category
+    history.forEach(item => {
+        if (item.category) {
+            categories[item.category] = (categories[item.category] || 0) + 1;
+        }
+    });
 
-            // Destroy existing chart if it exists
-            if (pieChart) {
-                pieChart.destroy();
-            }
+    // If no categories found, clear the chart
+    if (Object.keys(categories).length === 0) {
+        if (pieChart) {
+            pieChart.destroy();
+            pieChart = null;
+        }
+        return;
+    }
 
-            // Create new chart
-            pieChart = new Chart(ctx, {
-                type: 'pie',
-                data: data,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+    // Calculate percentages and prepare labels
+    const labels = Object.keys(categories).map(category => {
+        const count = categories[category];
+        const percentage = ((count / totalEntries) * 100).toFixed(1);
+        return `${category} (${percentage}%)`;
+    });
+
+    // Prepare data for the chart
+    const data = {
+        labels: labels,
+        datasets: [{
+            data: Object.values(categories),
+            backgroundColor: [
+                '#FF6384',
+                '#36A2EB',
+                '#FFCE56',
+                '#4BC0C0',
+                '#9966FF',
+                '#FF9F40',
+                '#41B883',
+                '#E46651',
+                '#00D8FF',
+                '#DD1B16'
+            ]
+        }]
+    };
+
+    // Destroy existing chart if it exists
+    if (pieChart) {
+        pieChart.destroy();
+    }
+
+    try {
+        // Create new chart
+        pieChart = new Chart(canvas.getContext('2d'), {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'white',
+                            padding: 10,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Ad Categories Distribution',
+                        color: 'white',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
                         },
-                        title: {
-                            display: true,
-                            text: 'Ad Categories Distribution'
+                        padding: 20
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value} ads (${percentage}%)`;
+                            }
                         }
                     }
                 }
-            });
-        }
-    });
+            }
+        });
+    } catch (error) {
+        console.error('Error creating pie chart:', error);
+    }
 }
 
 // Set up message listener for updates

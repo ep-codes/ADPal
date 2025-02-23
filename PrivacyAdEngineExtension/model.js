@@ -38,7 +38,7 @@ async function predictInterest(text) {
         prediction.dispose();
         
         // Map index to category
-        const categories = ["Business", "Sci/Tech", "Entertainment", "Sports", "U.S.", "World", "Health", "Top News", "Europe", "Italia", "Software and Developement", "Music Feeds", "Toons", "general"];
+        const categories = ["Business", "Sci/Tech", "Entertainment", "Sports", "Poltics", "World", "Health", "Top News", "European Affairs", "Foreign Affairs", "Software and Developement", "Music", "Toons", "Lifestyle"];
         return categories[categoryIndex] || "general";
     } catch (error) {
         console.error('Error during prediction:', error);

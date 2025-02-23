@@ -32,7 +32,9 @@
             </div>
             <div id="breakdown" class="tab-content" style="display:none;">
                 <h2>Ad Breakdown</h2>
-                <!-- Breakdown content will go here -->
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
             </div>
             <div id="settings" class="tab-content" style="display:none;">
                 <h2>History Settings</h2>
@@ -51,13 +53,9 @@
                     <button id="reset">Reset All</button>
                 </div>
             </div>
-            <div id="breakdown" class="tab-content" style="display:none;">
-                <h2>Breakdown</h2>
-                <canvas id="pieChart"></canvas>
-            </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="chart.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>
