@@ -86,7 +86,14 @@ h2 {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 10px 0;
+    margin: 15px 0;
+    padding: 10px 0;
+}
+
+.settings-divider {
+    height: 1px;
+    background: linear-gradient(to right, #004080, #007bff);
+    margin: 20px 0;
 }
 
 select {
@@ -99,9 +106,10 @@ select {
 .button-section {
     display: flex;
     gap: 10px;
+    margin: 15px 0;
 }
 
-button {
+#clearHistory, #reset {
     padding: 8px 12px;
     border: none;
     border-radius: 4px;
@@ -111,13 +119,21 @@ button {
 }
 
 #clearHistory {
-    background-color: #f0f0f0;
-    color: #333;
+    background-color: #dc3545;
+    color: white;
+}
+
+#clearHistory:hover {
+    background-color: #c82333;
 }
 
 #reset {
-    background-color: #004080;
+    background-color: #6c757d;
     color: white;
+}
+
+#reset:hover {
+    background-color: #5a6268;
 }
 
 button:hover {

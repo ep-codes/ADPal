@@ -27,6 +27,14 @@
                 </div>
             </div>
             <div id="history" class="tab-content" style="display:none;">
+                <h2>Recent History</h2>
+                <div id="historyList"></div>
+            </div>
+            <div id="breakdown" class="tab-content" style="display:none;">
+                <h2>Ad Breakdown</h2>
+                <!-- Breakdown content will go here -->
+            </div>
+            <div id="settings" class="tab-content" style="display:none;">
                 <h2>History Settings</h2>
                 <div class="settings-section">
                     <label for="historyRetention">Keep History For:</label>
@@ -36,12 +44,12 @@
                         <option value="year">1 Year</option>
                     </select>
                 </div>
+                <div class="settings-divider"></div>
+                <h2>Data Management</h2>
                 <div class="button-section">
                     <button id="clearHistory">Clear History</button>
                     <button id="reset">Reset All</button>
                 </div>
-                <h2><br>Recent History</h2>
-                <div id="historyList"></div>
             </div>
         </div>
     </div>
