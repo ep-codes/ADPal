@@ -39,7 +39,7 @@ async function predictInterest(text) {
         
         // Map index to category
         const categories = [
-            "Business", "Sci/Tech", "Entertainment", "Sports", "Politics", "World", 
+            "Business", "Tech", "Entertainment", "Sports", "Politics", "World", 
             "Health", "Top News", "European Affairs", "Foreign Affairs", 
             "Software and Development", "Animals", "Music", "Toons", "Lifestyle", 
             "Fashion", "Automotive", "Gaming", "Food", "Travel", "Cryptocurrency", "General"
