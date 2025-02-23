@@ -49,44 +49,65 @@ function updateUI() {
         // Update history list
         const historyList = document.getElementById("historyList");
         if (historyList) {
-            historyList.innerHTML = '';
+            updateHistoryList(data.history || []);
+            // Update pie chart when history is updated
+            updatePieChart(data.history || []);
+        }
+        
+        // Update pie chart
+        let pieChart = null;
+
+        function updatePieChart(history) {
+            const categories = {};
             
-            if (data.history && data.history.length > 0) {
-                const recentHistory = data.history.slice(-5).reverse(); // Show last 5 entries
-                recentHistory.forEach(entry => {
-                    const item = document.createElement('div');
-                    item.className = 'history-item';
-                    const date = new Date(entry.timestamp);
-                    
-                    // Create HTML for history item with image
-                    let historyContent = `
-                        <div class="history-info">
-                            <span class="history-category">${entry.category}</span>
-                            <span class="history-date">${date.toLocaleDateString()}</span>
-                        </div>
-                    `;
-                    
-                    if (entry.adContent && entry.adContent.image) {
-                        historyContent += `
-                            <div class="history-content">
-                                <img src="${entry.adContent.image}" class="history-image" alt="Ad Image">
-                                <span class="history-text">${entry.adContent.text}</span>
-                            </div>
-                        `;
-                    } else {
-                        historyContent += `
-                            <div class="history-content">
-                                <span class="history-text">${entry.adContent ? entry.adContent.text : 'No content available'}</span>
-                            </div>
-                        `;
-                    }
-                    
-                    item.innerHTML = historyContent;
-                    historyList.appendChild(item);
-                });
-            } else {
-                historyList.innerHTML = '<p>No history available</p>';
+            // Count occurrences of each category
+            history.forEach(item => {
+                if (item.category) {
+                    categories[item.category] = (categories[item.category] || 0) + 1;
+                }
+            });
+
+            // Prepare data for the chart
+            const data = {
+                labels: Object.keys(categories),
+                datasets: [{
+                    data: Object.values(categories),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40'
+                    ]
+                }]
+            };
+
+            // Get the canvas element
+            const ctx = document.getElementById('pieChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (pieChart) {
+                pieChart.destroy();
             }
+
+            // Create new chart
+            pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Ad Categories Distribution'
+                        }
+                    }
+                }
+            });
         }
     });
 }
@@ -195,3 +216,47 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+function updateHistoryList(history) {
+    const historyList = document.getElementById("historyList");
+    if (historyList) {
+        historyList.innerHTML = '';
+        
+        if (history && history.length > 0) {
+            const recentHistory = history.slice(-5).reverse(); // Show last 5 entries
+            recentHistory.forEach(entry => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                const date = new Date(entry.timestamp);
+                
+                // Create HTML for history item with image
+                let historyContent = `
+                    <div class="history-info">
+                        <span class="history-category">${entry.category}</span>
+                        <span class="history-date">${date.toLocaleDateString()}</span>
+                    </div>
+                `;
+                
+                if (entry.adContent && entry.adContent.image) {
+                    historyContent += `
+                        <div class="history-content">
+                            <img src="${entry.adContent.image}" class="history-image" alt="Ad Image">
+                            <span class="history-text">${entry.adContent.text}</span>
+                        </div>
+                    `;
+                } else {
+                    historyContent += `
+                        <div class="history-content">
+                            <span class="history-text">${entry.adContent ? entry.adContent.text : 'No content available'}</span>
+                        </div>
+                    `;
+                }
+                
+                item.innerHTML = historyContent;
+                historyList.appendChild(item);
+            });
+        } else {
+            historyList.innerHTML = '<p>No history available</p>';
+        }
+    }
+}

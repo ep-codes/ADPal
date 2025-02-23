@@ -230,3 +230,13 @@ button:hover {
 .tab-content.active {
     display: block;
 }
+
+#breakdown {
+    padding: 20px;
+    text-align: center;
+}
+
+#pieChart {
+    max-width: 400px;
+    margin: 0 auto;
+}
