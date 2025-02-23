@@ -7,7 +7,7 @@ import json
 import pandas as pd
 
 # Load data from CSV
-df = pd.read_csv("TensorFlowTraining/cleaned_original.csv")
+df = pd.read_csv("TensorFlowTraining/filtered_cleaned_original.csv")
 texts = df['text'].tolist()
 labels = df['category'].tolist()
 
@@ -32,7 +32,7 @@ model = tf.keras.Sequential([
 model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 # Train model
-model.fit(padded, y_train, epochs=30, verbose=1)
+model.fit(padded, y_train, epochs=50, verbose=1)
 
 # Save model
 model.save("text_classifier.keras")
