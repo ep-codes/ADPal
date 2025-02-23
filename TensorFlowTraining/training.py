@@ -1,24 +1,15 @@
 import tensorflow as tf
+from tensorflow import keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import json
 import pandas as pd
 
-# Read data from CSV file
-try:
-    df = pd.read_csv('trending.csv')
-    texts = df.iloc[:, 0].tolist()  # First column contains text
-    labels = df.iloc[:, 1].tolist()  # Second column contains labels
-except FileNotFoundError:
-    print("Error: trending.csv not found. Please ensure the file exists in the same directory.")
-    exit(1)
-except pd.errors.EmptyDataError:
-    print("Error: The CSV file is empty.")
-    exit(1)
-except Exception as e:
-    print(f"Error reading CSV file: {str(e)}")
-    exit(1)
+# Load data from CSV
+df = pd.read_csv("TensorFlowTraining/cleaned_original.csv")
+texts = df['text'].tolist()
+labels = df['category'].tolist()
 
 # Tokenize text
 tokenizer = Tokenizer(num_words=5000, oov_token="<OOV>")
@@ -44,7 +35,7 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=
 model.fit(padded, y_train, epochs=30, verbose=1)
 
 # Save model
-model.save("text_classifier.h5")
+model.save("text_classifier.keras")
 
 # Save tokenizer
 with open("tokenizer.json", "w") as f:
