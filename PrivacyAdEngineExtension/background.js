@@ -103,7 +103,7 @@ async function fetchAd(category) {
         // Store the image
         const adContent = {
             image: base64Image,
-            text: "Check out this amazing product!", // Default text
+            text: ("Check out this amazing product in the category: ".concat(category)), // Default text
             prompt: category || "default" // Use category as prompt or "default"
         };
             
